@@ -12,7 +12,6 @@ import androidx.room.PrimaryKey
 )])
 data class Streak(
     @PrimaryKey val userId: String,
-
     val currentStreak: Int,
     val maxStreak:Int,
     val lastReadDate:Int,

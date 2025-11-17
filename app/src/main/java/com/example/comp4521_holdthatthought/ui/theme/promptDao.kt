@@ -10,20 +10,20 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface PromptDao {
     @Query("SELECT * FROM prompts")
-    fun getAllPrompts(): Flow<List<Prompt>>
+    fun getAll(): Flow<List<Prompt>>
 
     @Query("SELECT * FROM prompts WHERE id = :id")
-    suspend fun getPromptById(id: String): Prompt?
+    suspend fun getById(id: String): Prompt?
 
     @Insert
-    suspend fun insertPrompt(prompt: Prompt)
+    suspend fun insert(prompt: Prompt)
 
     @Update
-    suspend fun updatePrompt(prompt: Prompt)
+    suspend fun update(prompt: Prompt)
 
     @Delete
-    suspend fun deletePrompt(prompt: Prompt)
+    suspend fun delete(prompt: Prompt)
 
     @Query("DELETE FROM prompts")
-    suspend fun deleteAllPrompts()
+    suspend fun deleteAll()
 }

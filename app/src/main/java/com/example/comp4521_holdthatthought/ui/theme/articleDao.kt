@@ -10,20 +10,20 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface ArticleDao {
     @Query("SELECT * FROM articles")
-    fun getAllArticles(): Flow<List<Article>>
+    fun getAll(): Flow<List<Article>>
 
     @Query("SELECT * FROM articles WHERE id = :id")
-    suspend fun getArticleById(id: String): Article?
+    suspend fun getById(id: String): Article?
 
     @Insert
-    suspend fun insertArticle(article: Article)
+    suspend fun insert(article: Article)
 
     @Update
-    suspend fun updateArticle(article: Article)
+    suspend fun update(article: Article)
 
     @Delete
-    suspend fun deleteArticle(article: Article)
+    suspend fun delete(article: Article)
 
     @Query("DELETE FROM articles")
-    suspend fun deleteAllArticles()
+    suspend fun deleteAll()
 }

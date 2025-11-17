@@ -10,20 +10,20 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface StreakDao {
     @Query("SELECT * FROM streaks")
-    fun getAllStreaks(): Flow<List<Streak>>
+    fun getAll(): Flow<List<Streak>>
 
     @Query("SELECT * FROM streaks WHERE userId = :id")
-    suspend fun getStreakById(id: String): Streak?
+    suspend fun getById(id: String): Streak?
 
     @Insert
-    suspend fun insertStreak(streak: Streak)
+    suspend fun insert(streak: Streak)
 
     @Update
-    suspend fun updateStreak(streak: Streak)
+    suspend fun update(streak: Streak)
 
     @Delete
-    suspend fun deleteStreak(streak: Streak)
+    suspend fun delete(streak: Streak)
 
     @Query("DELETE FROM streaks")
-    suspend fun deleteAllStreaks()
+    suspend fun deleteAll()
 }

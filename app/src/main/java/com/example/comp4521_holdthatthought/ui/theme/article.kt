@@ -16,7 +16,7 @@ enum class Status {
     onDelete = ForeignKey.CASCADE
 )])
 data class Article(
-    @PrimaryKey val id: String,
+    @PrimaryKey(autoGenerate = true) val id: String,
 
     val userId: String,
     val title: String,
