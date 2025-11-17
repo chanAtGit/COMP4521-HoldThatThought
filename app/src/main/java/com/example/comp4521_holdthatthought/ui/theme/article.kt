@@ -1,6 +1,7 @@
 package com.example.comp4521_holdthatthought.ui.theme
 
 import androidx.room.Entity
+import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 
 enum class Status {
@@ -8,7 +9,12 @@ enum class Status {
     COMPLETED
 }
 
-@Entity(tableName = "articles")
+@Entity(tableName = "articles", foreignKeys = [ForeignKey(
+    entity = Streak::class,
+    parentColumns = ["userId"],
+    childColumns = ["userId"],
+    onDelete = ForeignKey.CASCADE
+)])
 data class Article(
     @PrimaryKey val id: String,
 
