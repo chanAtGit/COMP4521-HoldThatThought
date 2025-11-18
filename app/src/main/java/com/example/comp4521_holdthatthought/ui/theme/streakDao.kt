@@ -13,7 +13,7 @@ interface StreakDao {
     fun getAll(): Flow<List<Streak>>
 
     @Query("SELECT * FROM streaks WHERE userId = :id")
-    suspend fun getById(id: String): Streak?
+    suspend fun getById(id: Int): Streak?
 
     @Insert
     suspend fun insert(streak: Streak)

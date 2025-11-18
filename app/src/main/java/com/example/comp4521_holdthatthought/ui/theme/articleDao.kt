@@ -13,10 +13,10 @@ interface ArticleDao {
     fun getAll(): Flow<List<Article>>
 
     @Query("SELECT * FROM articles WHERE id = :id")
-    suspend fun getById(id: String): Article?
+    suspend fun getById(id: Int): Article?
 
     @Query("SELECT * FROM articles WHERE userId = :id")
-    suspend fun getByUserId(id: String): Flow<List<Article>>?
+    fun getByUserId(id: Int): Flow<List<Article>>?
 
     @Insert
     suspend fun insert(article: Article)

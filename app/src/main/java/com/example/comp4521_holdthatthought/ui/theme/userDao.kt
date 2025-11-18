@@ -13,7 +13,7 @@ interface UserDao {
     fun getAll(): Flow<List<User>>
 
     @Query("SELECT * FROM users WHERE id = :id")
-    suspend fun getById(id: String): User?
+    suspend fun getById(id: Int): User?
 
     @Insert
     suspend fun insert(user: User)

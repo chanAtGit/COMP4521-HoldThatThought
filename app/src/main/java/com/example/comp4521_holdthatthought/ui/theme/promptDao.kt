@@ -13,10 +13,10 @@ interface PromptDao {
     fun getAll(): Flow<List<Prompt>>
 
     @Query("SELECT * FROM prompts WHERE id = :id")
-    suspend fun getById(id: String): Prompt?
+    suspend fun getById(id: Int): Prompt?
 
     @Query("SELECT * FROM prompts WHERE articleId = :id")
-    suspend fun getByArticleId(id: String): Flow<List<Prompt>>?
+    fun getByArticleId(id: Int): Flow<List<Prompt>>?
 
     @Insert
     suspend fun insert(prompt: Prompt)

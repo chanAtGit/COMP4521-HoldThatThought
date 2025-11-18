@@ -14,7 +14,7 @@ class UserRepo(private val dao: UserDao) {
 
     suspend fun update(user: User) = dao.update(user)
 
-    suspend fun getById(id: String): User? = dao.getById(id)
+    suspend fun getById(id: Int): User? = dao.getById(id)
 }
 
 class ArticleRepo(private val dao: ArticleDao) {
@@ -28,9 +28,9 @@ class ArticleRepo(private val dao: ArticleDao) {
 
     suspend fun update(article: Article) = dao.update(article)
 
-    suspend fun getById(id: String): Article? = dao.getById(id)
+    suspend fun getById(id: Int): Article? = dao.getById(id)
 
-    suspend fun getByUserId(id: String): Flow<List<Article>>? = dao.getByUserId(id)
+    suspend fun getByUserId(id: Int): Flow<List<Article>>? = dao.getByUserId(id)
 }
 
 class PromptRepo(private val dao: PromptDao) {
@@ -43,9 +43,9 @@ class PromptRepo(private val dao: PromptDao) {
 
     suspend fun update(prompt: Prompt) = dao.update(prompt)
 
-    suspend fun getById(id: String): Prompt? = dao.getById(id)
+    suspend fun getById(id: Int): Prompt? = dao.getById(id)
 
-    suspend fun getByArticleId(id: String): Flow<List<Prompt>>? = dao.getByArticleId(id)
+    suspend fun getByArticleId(id: Int): Flow<List<Prompt>>? = dao.getByArticleId(id)
 }
 
 class StreakRepo(private val dao: StreakDao) {
@@ -58,5 +58,5 @@ class StreakRepo(private val dao: StreakDao) {
 
     suspend fun update(streak: Streak) = dao.update(streak)
 
-    suspend fun getById(id: String): Streak? = dao.getById(id)
+    suspend fun getById(id: Int): Streak? = dao.getById(id)
 }

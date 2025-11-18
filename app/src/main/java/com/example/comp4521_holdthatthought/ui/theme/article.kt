@@ -10,20 +10,21 @@ enum class Status {
 }
 
 @Entity(tableName = "articles", foreignKeys = [ForeignKey(
-    entity = Streak::class,
-    parentColumns = ["userId"],
+    entity = User::class,
+    parentColumns = ["id"],
     childColumns = ["userId"],
     onDelete = ForeignKey.CASCADE
 )])
 data class Article(
-    @PrimaryKey(autoGenerate = true) val id: String,
+    @PrimaryKey(autoGenerate = true) val id: Int,
 
-    val userId: String,
+    val userId: Int,
     val title: String,
     val url: String,
     val content: String,
     val addedDate: Long,
     val readStatus: Status,
     val progress:Float,
-    val readDate:Long
+    val readDate:Long,
+    val tagId: String
 )

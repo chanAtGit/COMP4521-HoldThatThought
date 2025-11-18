@@ -11,7 +11,7 @@ import androidx.room.PrimaryKey
     onDelete = ForeignKey.CASCADE
 )])
 data class Streak(
-    @PrimaryKey val userId: String,
+    @PrimaryKey val userId: Int,
     val currentStreak: Int,
     val maxStreak:Int,
     val lastReadDate:Int,

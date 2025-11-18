@@ -88,10 +88,10 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     // -------------------------------------------------------------------------
     // fetch helpers (suspend functions)
     // -------------------------------------------------------------------------
-    suspend fun getUserById(id: String): User? = userRepo.getById(id)
-    suspend fun getArticleById(id: String): Article? = articleRepo.getById(id)
-    suspend fun getArticlesByUserId(id: String): Flow<List<Article>>? = articleRepo.getByUserId(id)
-    suspend fun getPromptById(id: String): Prompt? = promptRepo.getById(id)
-    suspend fun getPromptsByUserId(id: String): Flow<List<Prompt>>? = promptRepo.getByArticleId(id)
-    suspend fun getStreakById(id: String): Streak? = streakRepo.getById(id)
+    suspend fun getUserById(id: Int): User? = userRepo.getById(id)
+    suspend fun getArticleById(id: Int): Article? = articleRepo.getById(id)
+    suspend fun getArticlesByUserId(id: Int): Flow<List<Article>>? = articleRepo.getByUserId(id)
+    suspend fun getPromptById(id: Int): Prompt? = promptRepo.getById(id)
+    suspend fun getPromptsByUserId(id: Int): Flow<List<Prompt>>? = promptRepo.getByArticleId(id)
+    suspend fun getStreakById(id: Int): Streak? = streakRepo.getById(id)
 }

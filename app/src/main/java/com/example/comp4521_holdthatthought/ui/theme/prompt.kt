@@ -16,12 +16,12 @@ enum class Type { //need to be more detailed
     onDelete = ForeignKey.CASCADE
 )])
 data class Prompt(
-    @PrimaryKey(autoGenerate = true) val id: String,
+    @PrimaryKey(autoGenerate = true) val id: Int,
 
-    val articleId: String,
+    val articleId: Int,
     val type: Type,
     val question: String,
-    val response: String,
+    val response: String?,
     val completed: Boolean,
     val generatedDate: Long,
 )
