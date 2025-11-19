@@ -19,6 +19,7 @@ sealed class Screen(val route: String, val title: String) {
     data object AIQuestion : Screen("ai_question", "Question")
     data object AIResult : Screen("ai_result", "Result")
     data object Register : Screen("register", "Register")
+    data object ShareReceiver : Screen("share_receiver", "Save Article")
 
     companion object {
         fun fromRoute(route: String?): Screen {
@@ -34,6 +35,10 @@ sealed class Screen(val route: String, val title: String) {
                 Node9_1287.route -> Node9_1287
                 Node9_1333.route -> Node9_1333
                 Node8_968.route -> Node8_968
+                AIQuestion.route -> AIQuestion
+                AIResult.route -> AIResult
+                Register.route -> Register
+                ShareReceiver.route -> ShareReceiver
                 else -> Home
             }
         }

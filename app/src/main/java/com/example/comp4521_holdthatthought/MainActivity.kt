@@ -1,28 +1,23 @@
 package com.example.comp4521_holdthatthought
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import androidx.compose.material.icons.Icons
 import com.example.comp4521_holdthatthought.ui.theme.COMP4521HoldThatThoughtTheme
 import com.example.comp4521_holdthatthought.navigation.Screen
 import com.example.comp4521_holdthatthought.screens.HomeScreen
@@ -39,25 +34,74 @@ import com.example.comp4521_holdthatthought.screens.Node8_968Screen
 import com.example.comp4521_holdthatthought.screens.AIQuestionScreen
 import com.example.comp4521_holdthatthought.screens.AIResultScreen
 import com.example.comp4521_holdthatthought.screens.RegisterScreen
+import com.example.comp4521_holdthatthought.screens.ShareReceiverScreen
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 class MainActivity : ComponentActivity() {
+    // StateFlow to hold shared content - survives configuration changes
+    private val _sharedText = MutableStateFlow<String?>(null)
+    val sharedText: StateFlow<String?> = _sharedText.asStateFlow()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        // Handle share intent on initial launch
+        handleShareIntent(intent)
+
         setContent {
             COMP4521HoldThatThoughtTheme {
-                App()
+                App(
+                    sharedText = sharedText,
+                    onShareHandled = { _sharedText.value = null }
+                )
             }
+        }
+    }
+
+    // Called when activity is already running and receives new intent (singleTop)
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent) // Update the intent
+        handleShareIntent(intent)
+    }
+
+    private fun handleShareIntent(intent: Intent?) {
+        if (intent?.action == Intent.ACTION_SEND && intent.type == "text/plain") {
+            intent.getStringExtra(Intent.EXTRA_TEXT)?.let { text ->
+                _sharedText.value = text
+            }
+            // Clear the intent action to prevent reprocessing on configuration changes
+            intent.action = ""
         }
     }
 }
 
 @Composable
-fun App() {
+fun App(
+    sharedText: StateFlow<String?> = MutableStateFlow(null),
+    onShareHandled: () -> Unit = {}
+) {
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = backStackEntry?.destination
     val currentScreen: Screen = Screen.fromRoute(currentDestination?.route)
+
+    // Collect shared text state
+    val sharedContent by sharedText.collectAsState()
+
+    // Navigate to ShareReceiver when shared content arrives
+    LaunchedEffect(sharedContent) {
+        sharedContent?.let {
+            // Navigate to share receiver, clearing the back stack issue
+            navController.navigate(Screen.ShareReceiver.route) {
+                // Don't add to back stack if we're coming from outside the app
+                launchSingleTop = true
+            }
+        }
+    }
 
     Scaffold(
         modifier = Modifier.fillMaxSize()
@@ -86,6 +130,26 @@ fun App() {
             composable(Screen.AIQuestion.route) { AIQuestionScreen(onSubmit = { navController.navigate(Screen.AIResult.route) }, onCancel = { navController.navigateUp() }) }
             composable(Screen.AIResult.route) { AIResultScreen(onNext = { navController.navigateUp() }, onCancel = { navController.navigateUp() }) }
             composable(Screen.Register.route) { RegisterScreen(onDone = { navController.navigate(Screen.Home.route) }, onBack = { navController.navigateUp() }) }
+            composable(Screen.ShareReceiver.route) {
+                ShareReceiverScreen(
+                    sharedText = sharedContent ?: "",
+                    onSave = { title, url, notes ->
+                        // TODO: Save to database via ViewModel
+                        // For now, just navigate to home
+                        onShareHandled()
+                        navController.navigate(Screen.Home.route) {
+                            popUpTo(Screen.Home.route) { inclusive = true }
+                        }
+                    },
+                    onCancel = {
+                        onShareHandled()
+                        // If we have a back stack, go back; otherwise go home
+                        if (!navController.navigateUp()) {
+                            navController.navigate(Screen.Home.route)
+                        }
+                    }
+                )
+            }
         }
     }
 }
