@@ -3,7 +3,14 @@ package com.example.comp4521_holdthatthought.ui.theme
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.comp4521_holdthatthought.data.AILearningRepository
+import com.example.comp4521_holdthatthought.data.CheckAnswerResponse
+import com.example.comp4521_holdthatthought.data.QuestionAnswer
+import com.example.comp4521_holdthatthought.data.RetrofitClient
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 /**
@@ -22,6 +29,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     val promptRepo = PromptRepo(db.promptDao())
     val streakRepo = StreakRepo(db.streakDao())
 
+    private val aiLearningRepo = AILearningRepository(RetrofitClient.aiLearningService)
+
     // -------------------------------------------------------------------------
     // Exposed Flows (read‑only)
     // -------------------------------------------------------------------------
@@ -29,6 +38,45 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     val allArticles: Flow<List<Article>> = articleRepo.allItems
     val allPrompts: Flow<List<Prompt>> = promptRepo.allItems
     val allStreaks: Flow<List<Streak>> = streakRepo.allItems
+
+    // -------------------------------------------------------------------------
+    // API State Management
+    // -------------------------------------------------------------------------
+    private val _summarizeState = MutableStateFlow<SummaryState>(SummaryState.Idle)
+    val summarizeState: StateFlow<SummaryState> = _summarizeState.asStateFlow()
+
+    private val _questionsState = MutableStateFlow<QuestionsState>(QuestionsState.Idle)
+    val questionsState: StateFlow<QuestionsState> = _questionsState.asStateFlow()
+
+    private val _checkAnswerState = MutableStateFlow<CheckAnswerState>(CheckAnswerState.Idle)
+    val checkAnswerState: StateFlow<CheckAnswerState> = _checkAnswerState.asStateFlow()
+
+    private val _currentQuestion = MutableStateFlow<QuestionAnswer?>(null)
+    val currentQuestion: StateFlow<QuestionAnswer?> = _currentQuestion.asStateFlow()
+
+    // -------------------------------------------------------------------------
+    // State Models
+    // -------------------------------------------------------------------------
+    sealed class SummaryState {
+        object Idle : SummaryState()
+        object Loading : SummaryState()
+        data class Success(val summary: String) : SummaryState()
+        data class Error(val message: String) : SummaryState()
+    }
+
+    sealed class QuestionsState {
+        object Idle : QuestionsState()
+        object Loading : QuestionsState()
+        data class Success(val questions: List<QuestionAnswer>) : QuestionsState()
+        data class Error(val message: String) : QuestionsState()
+    }
+
+    sealed class CheckAnswerState {
+        object Idle : CheckAnswerState()
+        object Loading : CheckAnswerState()
+        data class Success(val result: CheckAnswerResponse) : CheckAnswerState()
+        data class Error(val message: String) : CheckAnswerState()
+    }
 
     // -------------------------------------------------------------------------
     // CRUD helpers – run on the IO dispatcher via viewModelScope
@@ -83,6 +131,46 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     fun updateStreak(streak: Streak) = viewModelScope.launch {
         streakRepo.update(streak)
+    }
+
+    // -------------------------------------------------------------------------
+    // API Methods
+    // -------------------------------------------------------------------------
+    fun summarizeArticle(text: String) = viewModelScope.launch {
+        _summarizeState.value = SummaryState.Loading
+        val result = aiLearningRepo.summarizeArticle(text)
+        _summarizeState.value = result
+            .onSuccess { summary -> SummaryState.Success(summary) }
+            .onFailure { error ->
+                SummaryState.Error(error.message ?: "Unknown error")
+            }
+            .getOrNull()?.let { it } ?: SummaryState.Error("Failed to summarize")
+    }
+
+    fun generateQuestions(text: String) = viewModelScope.launch {
+        _questionsState.value = QuestionsState.Loading
+        val result = aiLearningRepo.generateQuestions(text)
+        _questionsState.value = result
+            .onSuccess { questions -> QuestionsState.Success(questions) }
+            .onFailure { error ->
+                QuestionsState.Error(error.message ?: "Unknown error")
+            }
+            .getOrNull()?.let { it } ?: QuestionsState.Error("Failed to generate questions")
+    }
+
+    fun checkAnswer(question: String, userAnswer: String, aiAnswer: String) = viewModelScope.launch {
+        _checkAnswerState.value = CheckAnswerState.Loading
+        val result = aiLearningRepo.checkAnswer(question, userAnswer, aiAnswer)
+        _checkAnswerState.value = result
+            .onSuccess { response -> CheckAnswerState.Success(response) }
+            .onFailure { error ->
+                CheckAnswerState.Error(error.message ?: "Unknown error")
+            }
+            .getOrNull()?.let { it } ?: CheckAnswerState.Error("Failed to check answer")
+    }
+
+    fun setCurrentQuestion(question: QuestionAnswer?) {
+        _currentQuestion.value = question
     }
 
     // -------------------------------------------------------------------------

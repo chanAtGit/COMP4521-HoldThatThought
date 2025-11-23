@@ -21,7 +21,10 @@ data class Prompt(
     val articleId: Int,
     val type: Type,
     val question: String,
-    val response: String?,
-    val completed: Boolean,
+    val answer: String, // Correct answer from AI
+    val userAnswer: String? = null, // User's provided answer
+    val isCorrect: Boolean? = null, // Result of validation
+    val feedback: String? = null, // Feedback from AI
+    val completed: Boolean = false,
     val generatedDate: Long,
 )
