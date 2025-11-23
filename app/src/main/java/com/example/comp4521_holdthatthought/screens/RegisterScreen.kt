@@ -22,9 +22,15 @@ import androidx.compose.ui.unit.dp
 import com.example.comp4521_holdthatthought.ui.components.PrimaryButton
 import com.example.comp4521_holdthatthought.ui.components.ImageFromDrawableName
 import com.example.comp4521_holdthatthought.ui.components.Logo
+import com.example.comp4521_holdthatthought.ui.theme.AppViewModel
+import com.example.comp4521_holdthatthought.ui.theme.User
 
 @Composable
-fun RegisterScreen(onDone: () -> Unit = {}, onBack: () -> Unit = {}) {
+fun RegisterScreen(
+    viewModel: AppViewModel,
+    onDone: () -> Unit = {},
+    onBack: () -> Unit = {}
+) {
     val (name, setName) = remember { mutableStateOf("John") }
     val (email, setEmail) = remember { mutableStateOf("Johndoe@email.com") }
     val (phone, setPhone) = remember { mutableStateOf("(+1) 234 567 890") }
@@ -51,6 +57,21 @@ fun RegisterScreen(onDone: () -> Unit = {}, onBack: () -> Unit = {}) {
         Text("Password")
         OutlinedTextField(value = password, onValueChange = setPassword, modifier = Modifier.fillMaxWidth())
         Spacer(Modifier.height(16.dp))
-        PrimaryButton(text = "Register", onClick = onDone)
+        PrimaryButton(
+            text = "Register",
+            onClick = {
+                // Create and save user
+                val user = User(
+                    id = 0, // Auto-generated
+                    name = name,
+                    email = email,
+                    preference = "", // Will be set in settings
+                    totalPoints = 0,
+                    lastSyncDate = System.currentTimeMillis()
+                )
+                viewModel.insertUser(user)
+                onDone()
+            }
+        )
     }
 }

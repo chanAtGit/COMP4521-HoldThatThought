@@ -9,10 +9,15 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.comp4521_holdthatthought.ui.theme.COMP4521HoldThatThoughtTheme
+import com.example.comp4521_holdthatthought.ui.theme.AppViewModel
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 data class SavedItem(val title: String, val date: String)
 
@@ -23,13 +28,25 @@ private val mockSaved = listOf(
 )
 
 @Composable
-fun Node8_968Screen() {
+fun Node8_968Screen(viewModel: AppViewModel) {
+    val articles by viewModel.allArticles.collectAsStateWithLifecycle(initialValue = emptyList())
+
+    // Convert articles to SavedItems
+    val displayItems = if (articles.isNotEmpty()) {
+        articles.map { article ->
+            val dateFormat = SimpleDateFormat("MMM d, HH:mm", Locale.getDefault())
+            val timeStr = dateFormat.format(article.addedDate)
+            SavedItem(article.title, timeStr)
+        }
+    } else {
+        mockSaved
+    }
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(16.dp)
     ) {
         item { Text("Saved", style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(bottom = 8.dp)) }
-        items(mockSaved) { item ->
+        items(displayItems) { item ->
             Card(modifier = Modifier.padding(vertical = 6.dp)) {
                 androidx.compose.foundation.layout.Column(Modifier.padding(16.dp)) {
                     Text(item.title, style = MaterialTheme.typography.titleMedium)

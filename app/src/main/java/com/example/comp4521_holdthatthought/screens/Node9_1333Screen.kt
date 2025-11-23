@@ -21,9 +21,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.comp4521_holdthatthought.ui.theme.AppViewModel
 
 @Composable
-fun Node9_1333Screen(onBack: () -> Unit = {}) {
+fun Node9_1333Screen(
+    viewModel: AppViewModel,
+    onBack: () -> Unit = {}
+) {
     val (notif, setNotif) = remember { mutableStateOf(true) }
     val (daily, setDaily) = remember { mutableStateOf(false) }
     val (dark, setDark) = remember { mutableStateOf(false) }

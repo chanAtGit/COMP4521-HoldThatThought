@@ -30,12 +30,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.comp4521_holdthatthought.ui.theme.COMP4521HoldThatThoughtTheme
+import com.example.comp4521_holdthatthought.ui.theme.AppViewModel
 import androidx.compose.material3.Scaffold
 
 enum class BottomTab { Home, Articles, AI, Profile }
 
 @Composable
-fun HomeScreen(onNavigate: (com.example.comp4521_holdthatthought.navigation.Screen) -> Unit) {
+fun HomeScreen(
+    viewModel: AppViewModel,
+    onNavigate: (com.example.comp4521_holdthatthought.navigation.Screen) -> Unit
+) {
     val (tab, setTab) = remember { mutableStateOf(BottomTab.Home) }
 
     Scaffold(
@@ -76,10 +80,10 @@ fun HomeScreen(onNavigate: (com.example.comp4521_holdthatthought.navigation.Scre
             }
 
             when (tab) {
-                BottomTab.Home -> HomeTabContent(onNavigate)
-                BottomTab.Articles -> ArticlesTabContent(onNavigate)
-                BottomTab.AI -> AITabContent(onNavigate)
-                BottomTab.Profile -> ProfileTabContent(onNavigate)
+                BottomTab.Home -> HomeTabContent(viewModel, onNavigate)
+                BottomTab.Articles -> ArticlesTabContent(viewModel, onNavigate)
+                BottomTab.AI -> AITabContent(viewModel, onNavigate)
+                BottomTab.Profile -> ProfileTabContent(viewModel, onNavigate)
             }
         }
     }
@@ -122,18 +126,27 @@ private fun HomeTopBar() {
 @Composable private fun AITopBar() { Box(Modifier.fillMaxWidth().padding(16.dp)) { Text("AI Analysis", style = MaterialTheme.typography.titleMedium) } }
 
 @Composable
-private fun HomeTabContent(onNavigate: (com.example.comp4521_holdthatthought.navigation.Screen) -> Unit) {
-    Node5_812Screen(onItemClick = { onNavigate(com.example.comp4521_holdthatthought.navigation.Screen.Node6_947) })
+private fun HomeTabContent(
+    viewModel: AppViewModel,
+    onNavigate: (com.example.comp4521_holdthatthought.navigation.Screen) -> Unit
+) {
+    Node5_812Screen(viewModel = viewModel, onItemClick = { onNavigate(com.example.comp4521_holdthatthought.navigation.Screen.Node6_947) })
 }
 
 @Composable
-private fun ArticlesTabContent(onNavigate: (com.example.comp4521_holdthatthought.navigation.Screen) -> Unit) {
+private fun ArticlesTabContent(
+    viewModel: AppViewModel,
+    onNavigate: (com.example.comp4521_holdthatthought.navigation.Screen) -> Unit
+) {
     // Re-use home content for now
-    Node5_812Screen(onItemClick = { onNavigate(com.example.comp4521_holdthatthought.navigation.Screen.Node6_947) })
+    Node5_812Screen(viewModel = viewModel, onItemClick = { onNavigate(com.example.comp4521_holdthatthought.navigation.Screen.Node6_947) })
 }
 
 @Composable
-private fun AITabContent(onNavigate: (com.example.comp4521_holdthatthought.navigation.Screen) -> Unit) {
+private fun AITabContent(
+    viewModel: AppViewModel,
+    onNavigate: (com.example.comp4521_holdthatthought.navigation.Screen) -> Unit
+) {
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Text("Start a comprehension question based on the current article.", style = MaterialTheme.typography.bodyMedium)
         Spacer(Modifier.height(16.dp))
@@ -142,9 +155,12 @@ private fun AITabContent(onNavigate: (com.example.comp4521_holdthatthought.navig
 }
 
 @Composable
-private fun ProfileTabContent(onNavigate: (com.example.comp4521_holdthatthought.navigation.Screen) -> Unit) {
+private fun ProfileTabContent(
+    viewModel: AppViewModel,
+    onNavigate: (com.example.comp4521_holdthatthought.navigation.Screen) -> Unit
+) {
     // Embed the My Account screen as the Profile tab
-    Node9_1287Screen(onOpenSettings = { onNavigate(com.example.comp4521_holdthatthought.navigation.Screen.Node9_1333) })
+    Node9_1287Screen(viewModel = viewModel, onOpenSettings = { onNavigate(com.example.comp4521_holdthatthought.navigation.Screen.Node9_1333) })
 }
 
 // No preview needed

@@ -116,12 +116,12 @@ fun App(
             startDestination = Screen.Node4_3891.route,
             modifier = Modifier.padding(innerPadding)
         ) {
-            composable(Screen.Home.route) { HomeScreen(onNavigate = { navController.navigate(it.route) }) }
+            composable(Screen.Home.route) { HomeScreen(viewModel = viewModel, onNavigate = { navController.navigate(it.route) }) }
             composable(Screen.Node4_4573.route) { Node4_4573Screen(onPrimary = { navController.navigate(Screen.Home.route) }, onSecondary = { navController.navigate(Screen.Register.route) }, onSkip = { navController.navigate(Screen.Home.route) }) }
             composable(Screen.Node4_4106.route) { Node4_4106Screen(onPrimary = { navController.navigate(Screen.Node4_4573.route) }, onSecondary = { navController.navigate(Screen.Register.route) }, onSkip = { navController.navigate(Screen.Home.route) }) }
             composable(Screen.Node4_3891.route) { Node4_3891Screen(onPrimary = { navController.navigate(Screen.Node4_4106.route) }, onSecondary = { navController.navigate(Screen.Register.route) }, onSkip = { navController.navigate(Screen.Home.route) }) }
             composable(Screen.Node13_1155.route) { Node13_1155Screen() }
-            composable(Screen.Node5_812.route) { Node5_812Screen(onItemClick = { navController.navigate(Screen.Node6_947.route) }) }
+            composable(Screen.Node5_812.route) { Node5_812Screen(viewModel = viewModel, onItemClick = { navController.navigate(Screen.Node6_947.route) }) }
             composable(Screen.Node6_947.route) {
                 Node6_947Screen(
                     viewModel = viewModel,
@@ -129,13 +129,13 @@ fun App(
                     onAIQuestions = { navController.navigate(Screen.AIQuestion.route) }
                 )
             }
-            composable(Screen.Node8_1053.route) { Node8_1053Screen() }
-            composable(Screen.Node9_1287.route) { Node9_1287Screen() }
-            composable(Screen.Node9_1333.route) { Node9_1333Screen(onBack = { navController.navigateUp() }) }
-            composable(Screen.Node8_968.route) { Node8_968Screen() }
+            composable(Screen.Node8_1053.route) { Node8_1053Screen(viewModel = viewModel) }
+            composable(Screen.Node9_1287.route) { Node9_1287Screen(viewModel = viewModel, onOpenSettings = { navController.navigate(Screen.Node9_1333.route) }) }
+            composable(Screen.Node9_1333.route) { Node9_1333Screen(viewModel = viewModel, onBack = { navController.navigateUp() }) }
+            composable(Screen.Node8_968.route) { Node8_968Screen(viewModel = viewModel) }
             composable(Screen.AIQuestion.route) { AIQuestionScreen(viewModel = viewModel, onSubmit = { navController.navigate(Screen.AIResult.route) }, onCancel = { navController.navigateUp() }) }
             composable(Screen.AIResult.route) { AIResultScreen(viewModel = viewModel, onNext = { navController.navigateUp() }, onCancel = { navController.navigateUp() }) }
-            composable(Screen.Register.route) { RegisterScreen(onDone = { navController.navigate(Screen.Home.route) }, onBack = { navController.navigateUp() }) }
+            composable(Screen.Register.route) { RegisterScreen(viewModel = viewModel, onDone = { navController.navigate(Screen.Home.route) }, onBack = { navController.navigateUp() }) }
             composable(Screen.ShareReceiver.route) {
                 ShareReceiverScreen(
                     viewModel = viewModel,

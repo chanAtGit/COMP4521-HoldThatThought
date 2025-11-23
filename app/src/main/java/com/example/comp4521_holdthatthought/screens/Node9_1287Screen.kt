@@ -31,9 +31,14 @@ import androidx.compose.ui.unit.dp
 import com.example.comp4521_holdthatthought.ui.components.PrimaryButton
 import com.example.comp4521_holdthatthought.ui.components.AvatarFromDrawableName
 import com.example.comp4521_holdthatthought.ui.theme.COMP4521HoldThatThoughtTheme
+import com.example.comp4521_holdthatthought.ui.theme.AppViewModel
+import com.example.comp4521_holdthatthought.ui.theme.User
 
 @Composable
-fun Node9_1287Screen(onOpenSettings: () -> Unit = {}) {
+fun Node9_1287Screen(
+    viewModel: AppViewModel,
+    onOpenSettings: () -> Unit = {}
+) {
     val (name, setName) = remember { mutableStateOf("John") }
     val (email, setEmail) = remember { mutableStateOf("Johndoe@email.com") }
     val (phone, setPhone) = remember { mutableStateOf("(+1) 234 567 890") }

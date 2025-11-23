@@ -15,12 +15,18 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.comp4521_holdthatthought.ui.theme.COMP4521HoldThatThoughtTheme
+import com.example.comp4521_holdthatthought.ui.theme.AppViewModel
+import com.example.comp4521_holdthatthought.ui.theme.Article
 import com.example.comp4521_holdthatthought.ui.components.ImageFromDrawableName
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 data class MenuItem(val title: String, val time: String, val imageName: String)
 
@@ -32,7 +38,22 @@ private val mockMenuItems = listOf(
 )
 
 @Composable
-fun Node5_812Screen(onItemClick: (MenuItem) -> Unit = {}) {
+fun Node5_812Screen(
+    viewModel: AppViewModel,
+    onItemClick: (MenuItem) -> Unit = {}
+) {
+    val articles by viewModel.allArticles.collectAsStateWithLifecycle(initialValue = emptyList())
+
+    // Use real articles if available, otherwise fall back to mock
+    val displayItems = if (articles.isNotEmpty()) {
+        articles.map { article ->
+            val dateFormat = SimpleDateFormat("MMM d, HH:mm", Locale.getDefault())
+            val timeStr = dateFormat.format(article.addedDate)
+            MenuItem(article.title, timeStr, "img_detail_hero") // Use default drawable for articles without specific cover
+        }
+    } else {
+        mockMenuItems
+    }
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = Modifier
@@ -42,7 +63,7 @@ fun Node5_812Screen(onItemClick: (MenuItem) -> Unit = {}) {
         verticalArrangement = Arrangement.spacedBy(12.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        items(mockMenuItems) { item ->
+        items(displayItems) { item ->
             Card(
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 modifier = Modifier

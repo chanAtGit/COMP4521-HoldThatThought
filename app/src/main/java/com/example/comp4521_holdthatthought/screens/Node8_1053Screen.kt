@@ -18,10 +18,11 @@ import androidx.compose.ui.unit.dp
 import com.example.comp4521_holdthatthought.ui.components.PrimaryButton
 import com.example.comp4521_holdthatthought.ui.components.SecondaryButton
 import com.example.comp4521_holdthatthought.ui.theme.COMP4521HoldThatThoughtTheme
+import com.example.comp4521_holdthatthought.ui.theme.AppViewModel
 import com.example.comp4521_holdthatthought.ui.theme.Primary50
 
 @Composable
-fun Node8_1053Screen() {
+fun Node8_1053Screen(viewModel: AppViewModel) {
     Column(
         modifier = Modifier
             .fillMaxSize()
