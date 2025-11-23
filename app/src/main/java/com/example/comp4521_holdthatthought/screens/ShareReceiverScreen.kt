@@ -31,9 +31,13 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.comp4521_holdthatthought.ui.components.PrimaryButton
 import com.example.comp4521_holdthatthought.ui.components.SecondaryButton
+import com.example.comp4521_holdthatthought.ui.theme.AppViewModel
+import com.example.comp4521_holdthatthought.ui.theme.Article
+import com.example.comp4521_holdthatthought.ui.theme.Status
 
 @Composable
 fun ShareReceiverScreen(
+    viewModel: AppViewModel,
     sharedText: String,
     onSave: (title: String, url: String, notes: String) -> Unit,
     onCancel: () -> Unit
@@ -163,6 +167,20 @@ fun ShareReceiverScreen(
                 text = "Save Article",
                 onClick = {
                     isSaving = true
+                    // Create article and save to database
+                    val article = Article(
+                        id = 0, // AutoGenerate
+                        userId = 1, // Default user (TODO: use logged-in user ID)
+                        title = title,
+                        url = url,
+                        content = "", // Will be fetched later
+                        addedDate = System.currentTimeMillis(),
+                        readStatus = Status.READING,
+                        progress = 0f,
+                        readDate = 0L,
+                        tagId = "" // Will be assigned later
+                    )
+                    viewModel.insertArticle(article)
                     onSave(title, url, notes)
                 }
             )

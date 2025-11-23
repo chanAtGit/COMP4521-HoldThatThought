@@ -14,11 +14,13 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.comp4521_holdthatthought.ui.theme.COMP4521HoldThatThoughtTheme
+import com.example.comp4521_holdthatthought.ui.theme.AppViewModel
 import com.example.comp4521_holdthatthought.navigation.Screen
 import com.example.comp4521_holdthatthought.screens.HomeScreen
 import com.example.comp4521_holdthatthought.screens.Node4_4573Screen
@@ -52,8 +54,10 @@ class MainActivity : ComponentActivity() {
         handleShareIntent(intent)
 
         setContent {
+            val appViewModel: AppViewModel = viewModel()
             COMP4521HoldThatThoughtTheme {
                 App(
+                    viewModel = appViewModel,
                     sharedText = sharedText,
                     onShareHandled = { _sharedText.value = null }
                 )
@@ -81,6 +85,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun App(
+    viewModel: AppViewModel,
     sharedText: StateFlow<String?> = MutableStateFlow(null),
     onShareHandled: () -> Unit = {}
 ) {
@@ -132,10 +137,9 @@ fun App(
             composable(Screen.Register.route) { RegisterScreen(onDone = { navController.navigate(Screen.Home.route) }, onBack = { navController.navigateUp() }) }
             composable(Screen.ShareReceiver.route) {
                 ShareReceiverScreen(
+                    viewModel = viewModel,
                     sharedText = sharedContent ?: "",
                     onSave = { title, url, notes ->
-                        // TODO: Save to database via ViewModel
-                        // For now, just navigate to home
                         onShareHandled()
                         navController.navigate(Screen.Home.route) {
                             popUpTo(Screen.Home.route) { inclusive = true }
