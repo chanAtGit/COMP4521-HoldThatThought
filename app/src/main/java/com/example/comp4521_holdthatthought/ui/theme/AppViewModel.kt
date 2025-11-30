@@ -32,6 +32,32 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     private val aiLearningRepo = AILearningRepository(RetrofitClient.aiLearningService)
 
     // -------------------------------------------------------------------------
+    // Initialization
+    // -------------------------------------------------------------------------
+    init {
+        // Ensure a default user with id=1 exists for MVP
+        // This user is used for all articles in the MVP
+        viewModelScope.launch {
+            ensureDefaultUserExists()
+        }
+    }
+
+    private suspend fun ensureDefaultUserExists() {
+        val existingUser = userRepo.getById(1)
+        if (existingUser == null) {
+            val defaultUser = User(
+                id = 1,
+                name = "Default User",
+                email = "user@holdthatthought.app",
+                preference = "",
+                totalPoints = 0,
+                lastSyncDate = System.currentTimeMillis()
+            )
+            userRepo.insert(defaultUser)
+        }
+    }
+
+    // -------------------------------------------------------------------------
     // Exposed Flows (read‑only)
     // -------------------------------------------------------------------------
     val allUsers: Flow<List<User>> = userRepo.allItems
@@ -53,6 +79,12 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _currentQuestion = MutableStateFlow<QuestionAnswer?>(null)
     val currentQuestion: StateFlow<QuestionAnswer?> = _currentQuestion.asStateFlow()
+
+    private val _currentArticle = MutableStateFlow<Article?>(null)
+    val currentArticle: StateFlow<Article?> = _currentArticle.asStateFlow()
+
+    private val _currentQuestionIndex = MutableStateFlow<Int>(-1)
+    val currentQuestionIndex: StateFlow<Int> = _currentQuestionIndex.asStateFlow()
 
     // -------------------------------------------------------------------------
     // State Models
@@ -139,38 +171,86 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     fun summarizeArticle(text: String) = viewModelScope.launch {
         _summarizeState.value = SummaryState.Loading
         val result = aiLearningRepo.summarizeArticle(text)
-        _summarizeState.value = result
-            .onSuccess { summary -> SummaryState.Success(summary) }
-            .onFailure { error ->
-                SummaryState.Error(error.message ?: "Unknown error")
-            }
-            .getOrNull()?.let { it } ?: SummaryState.Error("Failed to summarize")
+        _summarizeState.value = result.fold(
+            onSuccess = { summary -> SummaryState.Success(summary) },
+            onFailure = { error -> SummaryState.Error(error.message ?: "Unknown error") }
+        )
     }
 
     fun generateQuestions(text: String) = viewModelScope.launch {
         _questionsState.value = QuestionsState.Loading
         val result = aiLearningRepo.generateQuestions(text)
-        _questionsState.value = result
-            .onSuccess { questions -> QuestionsState.Success(questions) }
-            .onFailure { error ->
-                QuestionsState.Error(error.message ?: "Unknown error")
-            }
-            .getOrNull()?.let { it } ?: QuestionsState.Error("Failed to generate questions")
+        _questionsState.value = result.fold(
+            onSuccess = { questions -> QuestionsState.Success(questions) },
+            onFailure = { error -> QuestionsState.Error(error.message ?: "Unknown error") }
+        )
     }
 
     fun checkAnswer(question: String, userAnswer: String, aiAnswer: String) = viewModelScope.launch {
         _checkAnswerState.value = CheckAnswerState.Loading
         val result = aiLearningRepo.checkAnswer(question, userAnswer, aiAnswer)
-        _checkAnswerState.value = result
-            .onSuccess { response -> CheckAnswerState.Success(response) }
-            .onFailure { error ->
-                CheckAnswerState.Error(error.message ?: "Unknown error")
-            }
-            .getOrNull()?.let { it } ?: CheckAnswerState.Error("Failed to check answer")
+        _checkAnswerState.value = result.fold(
+            onSuccess = { response -> CheckAnswerState.Success(response) },
+            onFailure = { error -> CheckAnswerState.Error(error.message ?: "Unknown error") }
+        )
     }
 
     fun setCurrentQuestion(question: QuestionAnswer?) {
         _currentQuestion.value = question
+        // Also try to find and set the index in the current questions list
+        if (question != null) {
+            val questionsState = _questionsState.value
+            if (questionsState is QuestionsState.Success) {
+                val index = questionsState.questions.indexOfFirst { it.question == question.question }
+                if (index >= 0) {
+                    _currentQuestionIndex.value = index
+                }
+            }
+        }
+    }
+
+    fun setCurrentQuestionByIndex(index: Int) {
+        val questionsState = _questionsState.value
+        if (questionsState is QuestionsState.Success && index in questionsState.questions.indices) {
+            _currentQuestionIndex.value = index
+            _currentQuestion.value = questionsState.questions[index]
+            // Reset check answer state for new question
+            _checkAnswerState.value = CheckAnswerState.Idle
+        }
+    }
+
+    fun setCurrentArticle(article: Article?) {
+        _currentArticle.value = article
+    }
+
+    fun advanceToNextQuestion() {
+        val questionsState = _questionsState.value
+        if (questionsState is QuestionsState.Success) {
+            val questions = questionsState.questions
+            val nextIndex = _currentQuestionIndex.value + 1
+            if (nextIndex < questions.size) {
+                _currentQuestionIndex.value = nextIndex
+                _currentQuestion.value = questions[nextIndex]
+                // Reset check answer state for new question
+                _checkAnswerState.value = CheckAnswerState.Idle
+            }
+        }
+    }
+
+    fun hasMoreQuestions(): Boolean {
+        val questionsState = _questionsState.value
+        return if (questionsState is QuestionsState.Success) {
+            _currentQuestionIndex.value + 1 < questionsState.questions.size
+        } else {
+            false
+        }
+    }
+
+    fun resetQuestions() {
+        _currentQuestion.value = null
+        _currentQuestionIndex.value = -1
+        _questionsState.value = QuestionsState.Idle
+        _checkAnswerState.value = CheckAnswerState.Idle
     }
 
     // -------------------------------------------------------------------------
@@ -180,6 +260,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     suspend fun getArticleById(id: Int): Article? = articleRepo.getById(id)
     suspend fun getArticlesByUserId(id: Int): Flow<List<Article>>? = articleRepo.getByUserId(id)
     suspend fun getPromptById(id: Int): Prompt? = promptRepo.getById(id)
-    suspend fun getPromptsByUserId(id: Int): Flow<List<Prompt>>? = promptRepo.getByArticleId(id)
+    suspend fun getPromptsByArticleId(id: Int): Flow<List<Prompt>>? = promptRepo.getByArticleId(id)
     suspend fun getStreakById(id: Int): Streak? = streakRepo.getById(id)
 }

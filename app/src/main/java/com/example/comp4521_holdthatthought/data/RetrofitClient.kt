@@ -1,11 +1,11 @@
 package com.example.comp4521_holdthatthought.data
 
-import com.squareup.okhttp3.OkHttpClient
-import com.squareup.okhttp3.logging.HttpLoggingInterceptor
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
+import okhttp3.MediaType.Companion.toMediaType
 import kotlinx.serialization.json.Json
 import retrofit2.Retrofit
-import retrofit2.converter.kotlinx.serialization.asConverterFactory
-import okhttp3.MediaType.Companion.toMediaType
+import retrofit2.converter.kotlinx.serialization.*
 
 object RetrofitClient {
     private const val BASE_URL = "https://comp4521-ai.boriskriuk-powered.com"

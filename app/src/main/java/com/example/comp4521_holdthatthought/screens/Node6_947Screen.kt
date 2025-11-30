@@ -41,6 +41,7 @@ fun Node6_947Screen(
     onAIQuestions: () -> Unit = {}
 ) {
     val summarizeState by viewModel.summarizeState.collectAsStateWithLifecycle()
+    val currentArticle by viewModel.currentArticle.collectAsStateWithLifecycle()
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -99,14 +100,18 @@ fun Node6_947Screen(
                 PrimaryButton(
                     text = "Generate Summary",
                     onClick = {
-                        // TODO: Fetch article content from URL or use saved content
-                        // For MVP, use placeholder text
-                        viewModel.summarizeArticle(
+                        // Use article content if available, otherwise use URL/title
+                        val textToAnalyze = if (!currentArticle?.content.isNullOrEmpty()) {
+                            currentArticle?.content ?: ""
+                        } else if (!currentArticle?.url.isNullOrEmpty()) {
+                            "Article URL: ${currentArticle?.url}\nTitle: ${currentArticle?.title}"
+                        } else {
                             "Thailand visa information guide. Thailand offers multiple visa types " +
                             "for different purposes including tourist visas, retirement visas, and work visas. " +
                             "Tourist visas allow 60-day stays, retirement visas require 800,000 THB in Thai bank account, " +
                             "and work visas require employer sponsorship..."
-                        )
+                        }
+                        viewModel.summarizeArticle(textToAnalyze)
                     }
                 )
             }
@@ -137,9 +142,14 @@ fun Node6_947Screen(
                 PrimaryButton(
                     text = "Retry",
                     onClick = {
-                        viewModel.summarizeArticle(
-                            "Thailand visa information guide. Thailand offers multiple visa types..."
-                        )
+                        val textToAnalyze = if (!currentArticle?.content.isNullOrEmpty()) {
+                            currentArticle?.content ?: ""
+                        } else if (!currentArticle?.url.isNullOrEmpty()) {
+                            "Article URL: ${currentArticle?.url}\nTitle: ${currentArticle?.title}"
+                        } else {
+                            "Thailand visa information guide..."
+                        }
+                        viewModel.summarizeArticle(textToAnalyze)
                     }
                 )
             }

@@ -168,12 +168,14 @@ fun ShareReceiverScreen(
                 onClick = {
                     isSaving = true
                     // Create article and save to database
+                    // TODO: Implement user authentication and replace hardcoded userId with actual logged-in user
+                    val currentUserId = 1 // Default user ID for MVP - will be replaced with authenticated user ID
                     val article = Article(
                         id = 0, // AutoGenerate
-                        userId = 1, // Default user (TODO: use logged-in user ID)
+                        userId = currentUserId,
                         title = title,
                         url = url,
-                        content = "", // Will be fetched later
+                        content = "", // Will be fetched later from URL
                         addedDate = System.currentTimeMillis(),
                         readStatus = Status.READING,
                         progress = 0f,

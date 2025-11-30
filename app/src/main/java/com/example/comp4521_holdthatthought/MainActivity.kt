@@ -121,7 +121,10 @@ fun App(
             composable(Screen.Node4_4106.route) { Node4_4106Screen(onPrimary = { navController.navigate(Screen.Node4_4573.route) }, onSecondary = { navController.navigate(Screen.Register.route) }, onSkip = { navController.navigate(Screen.Home.route) }) }
             composable(Screen.Node4_3891.route) { Node4_3891Screen(onPrimary = { navController.navigate(Screen.Node4_4106.route) }, onSecondary = { navController.navigate(Screen.Register.route) }, onSkip = { navController.navigate(Screen.Home.route) }) }
             composable(Screen.Node13_1155.route) { Node13_1155Screen() }
-            composable(Screen.Node5_812.route) { Node5_812Screen(viewModel = viewModel, onItemClick = { navController.navigate(Screen.Node6_947.route) }) }
+            composable(Screen.Node5_812.route) { Node5_812Screen(viewModel = viewModel, onItemClick = { article ->
+                viewModel.setCurrentArticle(article)
+                navController.navigate(Screen.Node6_947.route)
+            }) }
             composable(Screen.Node6_947.route) {
                 Node6_947Screen(
                     viewModel = viewModel,
@@ -133,8 +136,26 @@ fun App(
             composable(Screen.Node9_1287.route) { Node9_1287Screen(viewModel = viewModel, onOpenSettings = { navController.navigate(Screen.Node9_1333.route) }) }
             composable(Screen.Node9_1333.route) { Node9_1333Screen(viewModel = viewModel, onBack = { navController.navigateUp() }) }
             composable(Screen.Node8_968.route) { Node8_968Screen(viewModel = viewModel) }
-            composable(Screen.AIQuestion.route) { AIQuestionScreen(viewModel = viewModel, onSubmit = { navController.navigate(Screen.AIResult.route) }, onCancel = { navController.navigateUp() }) }
-            composable(Screen.AIResult.route) { AIResultScreen(viewModel = viewModel, onNext = { navController.navigateUp() }, onCancel = { navController.navigateUp() }) }
+            composable(Screen.AIQuestion.route) {
+                AIQuestionScreen(
+                    viewModel = viewModel,
+                    onSubmit = { navController.navigate(Screen.AIResult.route) },
+                    onCancel = {
+                        viewModel.resetQuestions()
+                        navController.navigateUp()
+                    }
+                )
+            }
+            composable(Screen.AIResult.route) {
+                AIResultScreen(
+                    viewModel = viewModel,
+                    onNext = { navController.navigate(Screen.AIQuestion.route) },
+                    onCancel = {
+                        viewModel.resetQuestions()
+                        navController.navigateUp()
+                    }
+                )
+            }
             composable(Screen.Register.route) { RegisterScreen(viewModel = viewModel, onDone = { navController.navigate(Screen.Home.route) }, onBack = { navController.navigateUp() }) }
             composable(Screen.ShareReceiver.route) {
                 ShareReceiverScreen(
@@ -162,5 +183,6 @@ fun App(
 @Preview(showBackground = true)
 @Composable
 fun AppPreview() {
-    COMP4521HoldThatThoughtTheme { App() }
+    val viewModel: AppViewModel = viewModel()
+    COMP4521HoldThatThoughtTheme { App(viewModel = viewModel) }
 }

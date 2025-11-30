@@ -32,6 +32,11 @@ class AILearningRepository(private val service: AILearningApiService) {
             user_answer = userAnswer,
             ai_answer = aiAnswer
         )
-        service.checkAnswer(request)
+        val response = service.checkAnswer(request)
+        if (response.success) {
+            response
+        } else {
+            throw Exception("API returned success=false")
+        }
     }
 }

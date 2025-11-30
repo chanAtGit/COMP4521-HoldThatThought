@@ -40,45 +40,70 @@ private val mockMenuItems = listOf(
 @Composable
 fun Node5_812Screen(
     viewModel: AppViewModel,
-    onItemClick: (MenuItem) -> Unit = {}
+    onItemClick: (Article) -> Unit = {}
 ) {
     val articles by viewModel.allArticles.collectAsStateWithLifecycle(initialValue = emptyList())
 
-    // Use real articles if available, otherwise fall back to mock
-    val displayItems = if (articles.isNotEmpty()) {
-        articles.map { article ->
-            val dateFormat = SimpleDateFormat("MMM d, HH:mm", Locale.getDefault())
-            val timeStr = dateFormat.format(article.addedDate)
-            MenuItem(article.title, timeStr, "img_detail_hero") // Use default drawable for articles without specific cover
+    if (articles.isNotEmpty()) {
+        // Display real articles from database
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(2),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            contentPadding = PaddingValues(4.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            items(articles) { article ->
+                val dateFormat = SimpleDateFormat("MMM d, HH:mm", Locale.getDefault())
+                val timeStr = dateFormat.format(article.addedDate)
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    modifier = Modifier
+                        .clickable { onItemClick(article) }
+                ) {
+                    androidx.compose.foundation.layout.Column(Modifier.padding(8.dp)) {
+                        ImageFromDrawableName(
+                            name = "img_detail_hero",
+                            modifier = Modifier
+                                .clip(MaterialTheme.shapes.medium)
+                                .height(120.dp)
+                                .fillMaxWidth()
+                        )
+                        Text(text = article.title, style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = 8.dp))
+                        Text(text = timeStr, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f))
+                    }
+                }
+            }
         }
     } else {
-        mockMenuItems
-    }
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        contentPadding = PaddingValues(4.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        items(displayItems) { item ->
-            Card(
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                modifier = Modifier
-                    .clickable { onItemClick(item) }
-            ) {
-                androidx.compose.foundation.layout.Column(Modifier.padding(8.dp)) {
-                    ImageFromDrawableName(
-                        name = item.imageName,
-                        modifier = Modifier
-                            .clip(MaterialTheme.shapes.medium)
-                            .height(120.dp)
-                            .fillMaxWidth()
-                    )
-                    Text(text = item.title, style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = 8.dp))
-                    Text(text = item.time, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f))
+        // No articles yet - show demo items
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(2),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            contentPadding = PaddingValues(4.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            items(mockMenuItems) { item ->
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    modifier = Modifier
+                ) {
+                    androidx.compose.foundation.layout.Column(Modifier.padding(8.dp)) {
+                        ImageFromDrawableName(
+                            name = item.imageName,
+                            modifier = Modifier
+                                .clip(MaterialTheme.shapes.medium)
+                                .height(120.dp)
+                                .fillMaxWidth()
+                        )
+                        Text(text = item.title, style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = 8.dp))
+                        Text(text = item.time, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f))
+                    }
                 }
             }
         }

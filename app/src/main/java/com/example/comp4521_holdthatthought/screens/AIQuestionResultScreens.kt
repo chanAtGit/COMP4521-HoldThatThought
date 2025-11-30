@@ -18,9 +18,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
@@ -40,7 +42,24 @@ fun AIQuestionScreen(
 ) {
     val questionsState by viewModel.questionsState.collectAsStateWithLifecycle()
     val currentQuestion by viewModel.currentQuestion.collectAsStateWithLifecycle()
-    val (userAnswer, setUserAnswer) = remember { mutableStateOf("") }
+    val currentArticle by viewModel.currentArticle.collectAsStateWithLifecycle()
+    var userAnswer by remember { mutableStateOf("") }
+
+    // Initialize first question when questions load
+    LaunchedEffect(questionsState) {
+        if (questionsState is AppViewModel.QuestionsState.Success && currentQuestion == null) {
+            val questions = (questionsState as AppViewModel.QuestionsState.Success).questions
+            if (questions.isNotEmpty()) {
+                // Use setCurrentQuestionByIndex to properly initialize both question and index
+                viewModel.setCurrentQuestionByIndex(0)
+            }
+        }
+    }
+
+    // Reset user answer when question changes
+    LaunchedEffect(currentQuestion) {
+        userAnswer = ""
+    }
 
     Column(
         modifier = Modifier
@@ -61,13 +80,15 @@ fun AIQuestionScreen(
                 PrimaryButton(
                     text = "Generate Questions",
                     onClick = {
-                        // Use placeholder article text for MVP
-                        viewModel.generateQuestions(
+                        val textToAnalyze = if (!currentArticle?.content.isNullOrEmpty()) {
+                            currentArticle?.content ?: ""
+                        } else if (!currentArticle?.url.isNullOrEmpty()) {
+                            "Article URL: ${currentArticle?.url}\nTitle: ${currentArticle?.title}"
+                        } else {
                             "Thailand visa information guide. Thailand offers multiple visa types " +
-                            "for different purposes including tourist visas, retirement visas, and work visas. " +
-                            "Tourist visas allow 60-day stays and can be extended for 30 more days. " +
-                            "Retirement visas require applicants to have 800,000 THB in a Thai bank account..."
-                        )
+                            "for different purposes including tourist visas, retirement visas, and work visas."
+                        }
+                        viewModel.generateQuestions(textToAnalyze)
                     }
                 )
             }
@@ -82,12 +103,8 @@ fun AIQuestionScreen(
                 }
             }
             is AppViewModel.QuestionsState.Success -> {
-                val questions = (questionsState as AppViewModel.QuestionsState.Success).questions
-                if (currentQuestion == null && questions.isNotEmpty()) {
-                    viewModel.setCurrentQuestion(questions[0])
-                }
-
-                currentQuestion?.let { question ->
+                if (currentQuestion != null) {
+                    val question = currentQuestion!!
                     Text(
                         text = question.question,
                         style = MaterialTheme.typography.titleLarge
@@ -96,7 +113,7 @@ fun AIQuestionScreen(
                     Text("Your Answer", style = MaterialTheme.typography.titleMedium)
                     OutlinedTextField(
                         value = userAnswer,
-                        onValueChange = setUserAnswer,
+                        onValueChange = { userAnswer = it },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(140.dp)
@@ -116,6 +133,15 @@ fun AIQuestionScreen(
                         )
                         SecondaryButton(text = "Cancel", onClick = onCancel)
                     }
+                } else {
+                    // Questions loaded but no current question selected - should not happen
+                    Text(
+                        text = "Error: Question not loaded. Please try again.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                    Spacer(Modifier.height(16.dp))
+                    SecondaryButton(text = "Back", onClick = onCancel)
                 }
             }
             is AppViewModel.QuestionsState.Error -> {
@@ -128,9 +154,14 @@ fun AIQuestionScreen(
                 PrimaryButton(
                     text = "Retry",
                     onClick = {
-                        viewModel.generateQuestions(
+                        val textToAnalyze = if (!currentArticle?.content.isNullOrEmpty()) {
+                            currentArticle?.content ?: ""
+                        } else if (!currentArticle?.url.isNullOrEmpty()) {
+                            "Article URL: ${currentArticle?.url}\nTitle: ${currentArticle?.title}"
+                        } else {
                             "Thailand visa information guide..."
-                        )
+                        }
+                        viewModel.generateQuestions(textToAnalyze)
                     }
                 )
             }
@@ -145,6 +176,8 @@ fun AIResultScreen(
     onCancel: () -> Unit
 ) {
     val checkAnswerState by viewModel.checkAnswerState.collectAsStateWithLifecycle()
+    // Memoize hasMoreQuestions to avoid recomputation during composition
+    val hasMoreQuestions = remember(checkAnswerState) { viewModel.hasMoreQuestions() }
 
     Column(
         modifier = Modifier
@@ -207,8 +240,19 @@ fun AIResultScreen(
                 )
                 Spacer(Modifier.height(16.dp))
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    PrimaryButton(text = "Next", onClick = onNext)
-                    SecondaryButton(text = "Cancel", onClick = onCancel)
+                    PrimaryButton(
+                        text = if (hasMoreQuestions) "Next Question" else "Finish",
+                        onClick = {
+                            if (hasMoreQuestions) {
+                                viewModel.advanceToNextQuestion()
+                                onNext()
+                            } else {
+                                // No more questions, go back to article view
+                                onCancel()
+                            }
+                        }
+                    )
+                    SecondaryButton(text = "Exit", onClick = onCancel)
                 }
             }
             is AppViewModel.CheckAnswerState.Error -> {
